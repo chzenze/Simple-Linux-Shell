@@ -9,6 +9,8 @@
 operation_t command_handler(char * args[], int argument_size){
     if(args[0][0] == '\0')
         return type_nothing;
+    if(strcmp(args[0],"environ") == 0)
+        return env_list;
     if(strcmp(args[0],"cd") == 0)
         return change_directory;
     if (strcmp(args[0],"exit") == 0)
@@ -58,7 +60,7 @@ int command_parser(char * command, char *args[]){
     return number_argument;
 }
 
-int exec_command(char * args[], int argument_size){
+int exec_command(char * args[], int argument_size, char **envp){
     pid_t child = 0;
     int run_flag = 0;
 
@@ -69,6 +71,12 @@ int exec_command(char * args[], int argument_size){
             return 0;
         case clean_screen:
             printf("\033[H\033[J");
+            break;
+        case env_list:
+            for (char **env = envp; *env != 0; env++){
+                char *thisEnv = *env;
+                printf("%s\n", thisEnv);
+            }
             break;
         case change_directory:
             if (chdir(args[0]) == -1)
@@ -94,7 +102,7 @@ int exec_command(char * args[], int argument_size){
     return 0;
 }
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[], char **envp){
 
     FILE *fp = NULL;
     int running = 0;
@@ -115,7 +123,7 @@ int main(int argc, char *argv[]){
             argument_size = command_parser(command, &args);
 
             //running the command
-            running = exec_command(args, argument_size);
+            running = exec_command(args, argument_size,envp);
 
             //clear the command cache
             clean_args(args, argument_size);
@@ -132,13 +140,11 @@ int main(int argc, char *argv[]){
                 argument_size = command_parser(command, &args);
 
                 //running the command
-                running = exec_command(args, argument_size);
+                running = exec_command(args, argument_size,envp);
 
                 //clear the command cache
                 clean_args(args, argument_size);
             }
         }
-
-
     }
 }
