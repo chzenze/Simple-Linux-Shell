@@ -13,6 +13,8 @@ operation_t command_handler(char * args[], int argument_size){
         return exit_shell;
     if(strstr(args[argument_size - 1],"&"))
         return background_operation;
+    if(strcmp(args[0],"clr") == 0)
+        return clean_screen;
     return front_operation;
 }
 
@@ -59,6 +61,8 @@ int exec_command(char * args[], int argument_size){
     switch (command_handler(args,argument_size)) {
         case exit_shell:
             return 1;
+        case clean_screen:
+            printf("\e[1;1H\e[2J");
             break;
         case change_directory:
             if (chdir(args[0]) == -1)
