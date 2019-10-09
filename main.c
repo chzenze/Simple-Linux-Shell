@@ -96,7 +96,7 @@ int main(int argc, char *argv[]){
         int argument_size = 0;
         char command[sysconf(_SC_ARG_MAX)];
 
-        if(args < 2){
+        if(argc < 2){
             printf("osh>");
             fflush(stdout);
 
