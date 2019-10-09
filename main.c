@@ -52,49 +52,73 @@ int command_parser(char * command, char *args[]){
     return number_argument;
 }
 
-int main(void){
+int exec_command(char * args[], int argument_size){
+    pid_t child = 0;
+    int run_flag = 0;
 
+    switch (command_handler(args,argument_size)) {
+        case exit_shell:
+            return 1;
+            break;
+        case change_directory:
+            if (chdir(args[0]) == -1)
+                printf("folder %s  is not exsist", args[1]);
+            break;
+        case background_operation:
+            run_flag = 1;
+            free(args[argument_size -1]);
+            args[argument_size - 1] = NULL;
+        case front_operation:
+            child = fork();
+            if (child == 0) {
+                if (execvp(args[0],args) == -1)
+                    printf("command %s not found \n", args[0]);
+            } else {
+                if (run_flag == 0)
+                    wait(NULL);
+                else
+                    wait(200); //wait a small amount time for let execvp run
+            }
+            break;
+    }
+    return 0;
+}
+
+int main(int argc, char *argv[]){
+
+    FILE *fp = NULL;
+    int running = 0;
     char * args[128];
+    void *source = NULL;
     memset(args,0, 128 * sizeof(char *));
 
-    while (1) {
-        pid_t child = 0;
-        int run_flag = 0;
+    while (running == 0) {
         int argument_size = 0;
         char command[sysconf(_SC_ARG_MAX)];
 
-        printf("osh>");
-        fflush(stdout);
+        if(args < 2){
+            printf("osh>");
+            fflush(stdout);
 
-        //read commend as [command] and [argument]
-        fgets(command, sysconf(_SC_ARG_MAX), stdin);
-
-        argument_size = command_parser(command, &args);
-        switch (command_handler(args,argument_size)) {
-            case exit_shell:
-                return 1;
-            case change_directory:
-                if (chdir(args[0]) == -1)
-                    printf("folder %s  is not exsist", args[1]);
-                break;
-            case background_operation:
-                run_flag = 1;
-                free(args[argument_size -1]);
-                args[argument_size - 1] = NULL;
-            case front_operation:
-                child = fork();
-                if (child == 0) {
-                    if (execvp(args[0],args) == -1)
-                        printf("command %s not found \n", args[0]);
-                } else {
-                    if (run_flag == 0)
-                        wait(NULL);
-                    else
-                        wait(200); //wait a small amount time for let execvp run
-                }
-                break;
+            //read commend as [command] and [argument]
+            source = stdin;
+        }else{
+            source = fopen(argv[1], "r");
+            if(source == NULL){
+                printf("File [%s] is not exist",argv[1]);
+                return  -1;
+            }
         }
 
-        clean_args(args,argument_size);
+        while(fgets(command, sysconf(_SC_ARG_MAX), source)){
+            //parse command to char *[]
+            argument_size = command_parser(command, &args);
+
+            //running the command
+            running = exec_command(args, argument_size);
+
+            //clear the command cache
+            clean_args(args, argument_size);
+        }
     }
 }
