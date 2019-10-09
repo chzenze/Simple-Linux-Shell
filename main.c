@@ -7,21 +7,25 @@
 #include <stdio.h>
 
 operation_t command_handler(char * args[], int argument_size){
+    if(args[0][0] == '\0')
+        return type_nothing;
     if(strcmp(args[0],"cd") == 0)
         return change_directory;
     if (strcmp(args[0],"exit") == 0)
         return exit_shell;
-    if(strstr(args[argument_size - 1],"&"))
-        return background_operation;
     if(strcmp(args[0],"clr") == 0)
         return clean_screen;
+    if(strstr(args[argument_size - 1],"&"))
+        return background_operation;
     return front_operation;
 }
 
 void clean_args(char* args[], int argument_size){
     for (int i = 0; i < argument_size ; ++i) {
-        if(args[i])
+        if(args[i]){
+            memset(args[i],0, strlen(args[i]) * sizeof(char));
             free(args[i]);
+        }
     }
 }
 
@@ -61,8 +65,10 @@ int exec_command(char * args[], int argument_size){
     switch (command_handler(args,argument_size)) {
         case exit_shell:
             return 1;
+        case type_nothing:
+            return 0;
         case clean_screen:
-            printf("\e[1;1H\e[2J");
+            printf("\033[H\033[J");
             break;
         case change_directory:
             if (chdir(args[0]) == -1)
@@ -100,21 +106,11 @@ int main(int argc, char *argv[]){
         int argument_size = 0;
         char command[sysconf(_SC_ARG_MAX)];
 
-        if(argc < 2){
+        if(argc < 2) {
             printf("osh>");
             fflush(stdout);
+            fgets(command, sysconf(_SC_ARG_MAX), stdin);
 
-            //read commend as [command] and [argument]
-            source = stdin;
-        }else{
-            source = fopen(argv[1], "r");
-            if(source == NULL){
-                printf("File [%s] is not exist",argv[1]);
-                return  -1;
-            }
-        }
-
-        while(fgets(command, sysconf(_SC_ARG_MAX), source)){
             //parse command to char *[]
             argument_size = command_parser(command, &args);
 
@@ -123,6 +119,26 @@ int main(int argc, char *argv[]){
 
             //clear the command cache
             clean_args(args, argument_size);
+
+        }else{
+            source = fopen(argv[1], "r");
+            if(source == NULL){
+                printf("File [%s] is not exist",argv[1]);
+                return  -1;
+            }
+
+            while(fgets(command, sysconf(_SC_ARG_MAX), source)){
+                //parse command to char *[]
+                argument_size = command_parser(command, &args);
+
+                //running the command
+                running = exec_command(args, argument_size);
+
+                //clear the command cache
+                clean_args(args, argument_size);
+            }
         }
+
+
     }
 }
