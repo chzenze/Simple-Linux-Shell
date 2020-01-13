@@ -211,8 +211,6 @@ int exec_command(char *command, char **envp) {
     return 0;
 }
 
-
-
 int main(int argc, char *argv[], char **envp) {
     int running = 0;
     getcwd(shell_location,PATH_MAX * sizeof(char));
