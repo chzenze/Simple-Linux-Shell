@@ -5,21 +5,27 @@
 #ifndef OSH_TYPE_H
 #define OSH_TYPE_H
 
-typedef enum {
-    background_operation, front_operation, change_directory, exit_shell, clean_screen, type_nothing, env_list, redirect_output, help_command
-    ,Read_file, pause_shell, echo_command
-}operation_t;
+#include <stdint.h>
 
-typedef enum{
-    pipe_to_file, pipe_from_stdin, pipe_to_stdout, no_operation
-}pipe_operation;
+typedef enum {
+    create_file, add_to_file, read_from_stdin、
+
+}redirect_options_t;
+
+typedef enum {
+    front_operation, change_directory, exit_shell, clean_screen, redirect
+    , pause_shell, echo_command
+}command_type_t;
 
 typedef struct command{
-    int size;
-    char connector;
-    char *command_array[128];
+    char * exec;
+    char * argument[];
+    char * file_name;
+    uint32_t argument_size;
+    command_type_t command_type;
+    struct command * next_command;
+    redirect_options_t redirectOptions;
 } command_t;
 
-char * help = "cd <directory> : Change the current default directory to <directory>. If the <directory> argument is not present, report the current directory. If the directory does not exist, an appropriate error message should be displayed. This command should also change the PWD environment variable.\nclr : Clear the Screen\ndir <directory> : List the contents of directory <directory>\nenviron : List all the environment strings\necho<comment> : Display <comment> on the display, followed by a new line (multiple spaces/tabs may be reduced to a single space)\nhelp : Display the user manual using more filter\npause : Pause the operation of the shell until “ENTER/RETURN” key is pressed\nquit : Quit the shell";
 #endif //OSH_TY// PE_H
 
