@@ -8,8 +8,7 @@
 #include <stdint.h>
 
 typedef enum {
-    create_file, add_to_file, read_from_stdin、
-
+    create_file, add_to_file, read_from_stdin
 }redirect_options_t;
 
 typedef enum {

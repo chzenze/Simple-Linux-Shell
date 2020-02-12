@@ -17,7 +17,7 @@
 command_type_t get_command_type(char * args) {
     if (strcmp(args, "cd") == 0)
         return change_directory;
-    if (strcmp(args, "stop") == 0)
+    if (strcmp(args, "exit") == 0)
         return exit_shell;
     if (strcmp(args,"pause") == 0)
         return pause_shell;
@@ -62,45 +62,42 @@ command_t * parsing_command(char * command){
 
 
 //use for ececute the command
-int exec_command(command_collection_t * command) {
+int exec_command(command_t * command) {
     int fd[2];
     int child_pid = 0;
     int redirect_file = 0;
 
-    for (int i = 0; i < command->size; i++){
-        command_t * current = command->command_array[i];
-        int background_run_flag = current->background_flag;
-
-        switch (current->command_type) {
+    while(command->next_command){
+        switch (command->command_type) {
             case exit_shell:
                 return 1;
             case clean_screen:
                 printf("\033[H\033[J");
                 break;
             case echo_command:
-                printf("%s\n", current->argument[0]);
+                printf("%s\n", command->argument[0]);
                 break;
             case pause_shell:
                 printf("please press [ENTER] to continue\n");
                 while (getchar() == '\n');
                 break;
             case change_directory:
-                if (chdir(current->argument[0]) == -1)
-                    printf("Can't open folder %s\n", current->argument[0]);
+                if (chdir(command->argument[0]) == -1)
+                    printf("Can't open folder %s\n", command->argument[0]);
                 break;
             case redirect:
-                switch (current->redirectOptions){
+                switch (command->redirectOptions){
                     case create_file:
-                        redirect_file = open(current->file_name, O_CREAT | O_TRUNC| O_WRONLY,0666);
+                        redirect_file = open(command->file_name, O_CREAT | O_TRUNC| O_WRONLY,0666);
                         break;
                     case add_to_file:
-                        redirect_file = open(current->file_name, O_APPEND | O_WRONLY,0666);
+                        redirect_file = open(command->file_name, O_APPEND | O_WRONLY,0666);
                         break;
                     case read_from_stdin:
                         break;
                 }
             case front_operation:
-                if(commands[i]->connector == '|'){
+                if(command->command_type == ){
                     pipe(fd);
                     redirect_file = fd[1];
                 }
@@ -126,9 +123,6 @@ int exec_command(command_collection_t * command) {
                 }
         }
     }
-    //clear the command cache
-    clean_args(commands, command_size);
-    return 0;
 }
 
 int main(int argc, char *argv[]) {
