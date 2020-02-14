@@ -6,21 +6,22 @@
 #define OSH_TYPE_H
 
 #include <stdint.h>
+#include <zconf.h>
 
 typedef enum {
-    create_file, add_to_file, read_from_stdin
+    no_redirect, create_file, add_to_file, read_from_stdin
 }redirect_options_t;
 
 typedef enum {
-    front_operation, change_directory, exit_shell, clean_screen, redirect
-    , pause_shell, echo_command
+    front_operation, change_directory, exit_shell, clean_screen, echo_command
 }command_type_t;
 
 typedef struct command{
     char * exec;
-    char * argument[];
     char * file_name;
-    uint32_t argument_size;
+    char * * argument;
+    int background_task;
+
     command_type_t command_type;
     struct command * next_command;
     redirect_options_t redirectOptions;
