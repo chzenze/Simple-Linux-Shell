@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/hanzech/worksapces/coms352-s20-shell/build",
+  "command": "/usr/bin/clang-9   -g   -o CMakeFiles/OSH.dir/main.c.o   -c /home/hanzech/worksapces/coms352-s20-shell/main.c",
+  "file": "/home/hanzech/worksapces/coms352-s20-shell/main.c"
+}
+]

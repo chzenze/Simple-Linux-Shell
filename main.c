@@ -3,13 +3,13 @@
 //
 #include "Type.h"
 #include <string.h>
-#include <zconf.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <sys/wait.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
 
 #define MAX_HISTORY 50
 
@@ -87,7 +87,8 @@ command_t * parsing_command(char * command){
 int exec_command(command_t * command) {
     int fd[2];
     int child_pid = 0;
-    char args;
+        int stdin = dup(STDIN_FILENO);
+    int stdout = dup(STDOUT_FILENO);
     int write_file = 0, read_file = 0;
 
     while(command){
@@ -106,38 +107,53 @@ int exec_command(command_t * command) {
                 break;
             case front_operation:
                 //handle output redirect
-                pipe(fd);
-                if (command->redirectOptions == add_to_file){
+                if(command->argument)
+                    pipe(fd);
+                if (command->redirectOptions == add_to_file)
                     write_file = open(command->file_name, O_APPEND | O_WRONLY, 0666);
-                } else if (command->redirectOptions == create_file){
+                else if (command->redirectOptions == create_file)
                     write_file = open(command->file_name, O_CREAT | O_TRUNC | O_WRONLY, 0666);
-                } else if (command->redirectOptions == read_from_stdin){
+                else if (command->redirectOptions == read_from_stdin)
                     read_file = open(command->file_name, O_CREAT | O_WRONLY | O_TRUNC, 0666);
-                }
+                
 
                 if ((child_pid = fork()) == 0) {
                     if(read_file != 0)
-                        dup2(read_file,STDIN_FILENO);
+                        dup2(read_file, STDIN_FILENO);
                     if(write_file != 0)
                         dup2(write_file, STDOUT_FILENO);
-                    if(fd[0] != 0 && !command->next_command)
-                        dup2(fd[0],STDIN_FILENO);
+                    
+                    if(fd[0]|fd[1]){
+                        if(fd[0] && command->next_command)
+                            dup2(fd[1],STDOUT_FILENO);
+                        else
+                           dup2(fd[0],STDIN_FILENO);
+                    }
                     if (execvp(command->exec, command->argument) == -1)
                         printf("command %s not found \n", command->exec);
                     exit(-1);
                 } else {
-                    if (command->background_task == 1) {
+                    if (command->background_task == 0) {
                         waitpid(child_pid, NULL, WNOHANG);
                         if(read_file != 0) {
-                            dup2(STDIN_FILENO, read_file);
+                            close(read_file);
+                            dup2(STDIN_FILENO, stdin);
                             read_file = 0;
                         }
                         if(write_file != 0) {
-                            dup2(STDOUT_FILENO, write_file);
+                            close(write_file);
+                            dup2(STDOUT_FILENO, stdout);
                             write_file = 0;
                         }
-                        if(fd[0] != 0 && !command->next_command)
-                            dup2(STDIN_FILENO,fd[0]);
+                        if(fd[0] && fd[1] ){
+                            if(!command->next_command){
+                                close(fd[0]);
+                                close(fd[1]);
+                                fd[0] = 0, fd[1] = 0;
+                            }
+                            dup2(stdin,STDIN_FILENO);
+                            dup2(stdout,STDOUT_FILENO);
+                        }                          
                     } else
                         wait(200); //wait a small amount time for let execvp run
                 }

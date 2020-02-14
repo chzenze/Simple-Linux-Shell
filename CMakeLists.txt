@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)  # CMake version check
+cmake_minimum_required(VERSION 3.10)  # CMake version check
 project(OSH)               # Create project "simple_example"
 
 # Add myshell.cpp file of project root directory as source file

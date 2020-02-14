@@ -1,2 +1,2 @@
 target: main.c
-	gcc main.c -o myshell
+	gcc main.c -o myshell -ggdb
