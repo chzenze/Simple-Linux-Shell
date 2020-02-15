@@ -13,7 +13,7 @@ typedef enum {
 }redirect_options_t;
 
 typedef enum {
-    front_operation, change_directory, exit_shell, clean_screen, echo_command
+    front_operation, change_directory, exit_shell, clean_screen
 }command_type_t;
 
 typedef struct command{

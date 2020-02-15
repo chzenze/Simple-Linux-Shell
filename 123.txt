@@ -1,0 +1,11 @@
+total 88
+-rw-r--r--  1 hanzech  staff      0 Feb 14 14:40 123.txt
+-rw-r--r--  1 hanzech  staff    328 Feb 14 12:50 CMakeLists.txt
+-rw-r--r--  1 hanzech  staff     44 Feb 14 12:50 Makefile
+-rw-r--r--  1 hanzech  staff    794 Jan 21 14:35 ReadMe.txt
+-rw-r--r--  1 hanzech  staff    573 Feb 14 13:27 Type.h
+drwxr-xr-x  7 hanzech  staff    224 Feb 14 12:50 build
+drwxr-xr-x  9 hanzech  staff    288 Feb 14 14:36 cmake-build-debug
+-rw-r--r--  1 hanzech  staff   6129 Feb 14 14:40 main.c
+-rwxr-xr-x  1 hanzech  staff  18488 Feb 14 14:39 myshell
+drwxr-xr-x  3 hanzech  staff     96 Feb 14 13:03 myshell.dSYM
